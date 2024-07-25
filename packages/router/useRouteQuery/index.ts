@@ -34,6 +34,7 @@ export function useRouteQuery<
     route = useRoute(),
     router = useRouter(),
     transform = value => value as any as K,
+    serializer,
   } = options
 
   if (!_queue.has(router))
@@ -42,6 +43,12 @@ export function useRouteQuery<
   const _queriesQueue = _queue.get(router)!
 
   let query = route.query[name] as any
+
+  const _serializer = {
+    read: transform ?? (value => value),
+    write: (value: any) => value as T,
+    ...serializer,
+  }
 
   tryOnScopeDispose(() => {
     query = undefined
@@ -56,9 +63,10 @@ export function useRouteQuery<
       get() {
         track()
 
-        return transform(query !== undefined ? query : toValue(defaultValue))
+        return _serializer.read(query !== undefined ? query : toValue(defaultValue))
       },
-      set(v) {
+      set(_v) {
+        const v = _serializer.write(_v)
         if (query === v)
           return
 
@@ -89,6 +97,8 @@ export function useRouteQuery<
   watch(
     () => route.query[name],
     (v) => {
+      console.log('watch', v)
+
       query = v
 
       _trigger()

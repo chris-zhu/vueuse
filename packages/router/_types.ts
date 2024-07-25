@@ -27,6 +27,16 @@ export interface ReactiveRouteOptions {
 export interface ReactiveRouteOptionsWithTransform<V, R> extends ReactiveRouteOptions {
   /**
    * Function to transform data before return
+   *
+   * @deprecated use `serializer` instead
    */
   transform?: (val: V) => R
+
+  /**
+   * Serializer for the value
+   */
+  serializer?: {
+    read?: (val: V) => any
+    write?: (val: any) => V
+  }
 }
